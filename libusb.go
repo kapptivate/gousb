@@ -17,7 +17,6 @@ package gousb
 import (
 	"fmt"
 	"log"
-	"reflect"
 	"sync"
 	"time"
 	"unsafe"
@@ -200,11 +199,12 @@ func (libusbImpl) getDevices(ctx *libusbContext) ([]*libusbDevice, error) {
 		return nil, fromErrNo(C.int(cnt))
 	}
 	var devs []*C.libusb_device
-	*(*reflect.SliceHeader)(unsafe.Pointer(&devs)) = reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(list)),
-		Len:  int(cnt),
-		Cap:  int(cnt),
-	}
+	devs = unsafe.Slice(list, int(cnt))
+	//*(*reflect.SliceHeader)(unsafe.Pointer(&devs)) = reflect.SliceHeader{
+	//	Data: uintptr(unsafe.Pointer(list)),
+	//	Len:  int(cnt),
+	//	Cap:  int(cnt),
+	//}
 	var ret []*libusbDevice
 	for _, d := range devs {
 		ret = append(ret, (*libusbDevice)(d))
@@ -277,11 +277,7 @@ func (libusbImpl) getDeviceDesc(d *libusbDevice) (*DeviceDesc, error) {
 		}
 
 		var ifaces []C.struct_libusb_interface
-		*(*reflect.SliceHeader)(unsafe.Pointer(&ifaces)) = reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(cfg._interface)),
-			Len:  int(cfg.bNumInterfaces),
-			Cap:  int(cfg.bNumInterfaces),
-		}
+		ifaces = unsafe.Slice(cfg._interface, int(cfg.bNumInterfaces))
 		c.Interfaces = make([]InterfaceDesc, 0, len(ifaces))
 		// a map of interface numbers to a set of alternate settings numbers
 		hasIntf := make(map[int]map[int]bool)
@@ -291,11 +287,7 @@ func (libusbImpl) getDeviceDesc(d *libusbDevice) (*DeviceDesc, error) {
 			}
 
 			var alts []C.struct_libusb_interface_descriptor
-			*(*reflect.SliceHeader)(unsafe.Pointer(&alts)) = reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(iface.altsetting)),
-				Len:  int(iface.num_altsetting),
-				Cap:  int(iface.num_altsetting),
-			}
+			alts = unsafe.Slice(iface.altsetting, int(iface.num_altsetting))
 			descs := make([]InterfaceSetting, 0, len(alts))
 			for _, alt := range alts {
 				i := InterfaceSetting{
@@ -317,11 +309,7 @@ func (libusbImpl) getDeviceDesc(d *libusbDevice) (*DeviceDesc, error) {
 				hasIntf[i.Number][i.Alternate] = true
 
 				var ends []C.struct_libusb_endpoint_descriptor
-				*(*reflect.SliceHeader)(unsafe.Pointer(&ends)) = reflect.SliceHeader{
-					Data: uintptr(unsafe.Pointer(alt.endpoint)),
-					Len:  int(alt.bNumEndpoints),
-					Cap:  int(alt.bNumEndpoints),
-				}
+				ends = unsafe.Slice(alt.endpoint, int(alt.bNumEndpoints))
 				i.Endpoints = make(map[EndpointAddress]EndpointDesc, len(ends))
 				for _, end := range ends {
 					epi := libusbEndpoint(end).endpointDesc(dev)
@@ -363,14 +351,14 @@ func (libusbImpl) reset(d *libusbDevHandle) error {
 }
 
 func (libusbImpl) control(d *libusbDevHandle, timeout time.Duration, rType, request uint8, val, idx uint16, data []byte) (int, error) {
-	dataSlice := (*reflect.SliceHeader)(unsafe.Pointer(&data))
+	dataSlice := unsafe.SliceData(data)
 	n := C.libusb_control_transfer(
 		(*C.libusb_device_handle)(d),
 		C.uint8_t(rType),
 		C.uint8_t(request),
 		C.uint16_t(val),
 		C.uint16_t(idx),
-		(*C.uchar)(unsafe.Pointer(dataSlice.Data)),
+		(*C.uchar)(unsafe.Pointer(dataSlice)),
 		C.uint16_t(len(data)),
 		C.uint(timeout/time.Millisecond))
 	if n < 0 {
@@ -471,11 +459,7 @@ func (libusbImpl) buffer(t *libusbTransfer) []byte {
 	// TODO(go1.10?): replace with more user-friendly construct once
 	// one exists. https://github.com/golang/go/issues/13656
 	var ret []byte
-	*(*reflect.SliceHeader)(unsafe.Pointer(&ret)) = reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(t.buffer)),
-		Len:  int(t.length),
-		Cap:  int(t.length),
-	}
+	ret = C.GoBytes(unsafe.Pointer(t.buffer), t.length)
 	return ret
 }
 
