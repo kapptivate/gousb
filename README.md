@@ -1,3 +1,7 @@
+FORKED ONLY FOR REGENT VENDOR NAME
+usbid/load.go go generate
+AND add missing usbid name for sysmocom vendor
+
 Introduction
 ============
 
