@@ -95,8 +95,8 @@ func (e *endpoint) transfer(ctx context.Context, buf []byte) (int, error) {
 		copy(t.data(), buf)
 	}
 
-	if err := t.submit(); err != nil {
-		return 0, err
+	if submitErr := t.submit(); submitErr != nil {
+		return 0, submitErr
 	}
 
 	n, err := t.wait(ctx)

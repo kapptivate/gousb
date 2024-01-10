@@ -48,28 +48,28 @@ func TestClaimAndRelease(t *testing.T) {
 		t.Fatalf("OpenDeviceWithVIDPID(0x8888, 0x0002): %v", err)
 	}
 
-	if mfg, err := dev.Manufacturer(); err != nil {
-		t.Errorf("%s.Manufacturer(): error %v", dev, err)
+	if mfg, manufacturerErr := dev.Manufacturer(); manufacturerErr != nil {
+		t.Errorf("%s.Manufacturer(): error %v", dev, manufacturerErr)
 	} else if want := "ACME Industries"; mfg != want {
 		t.Errorf("%s.Manufacturer(): %q, want %q", dev, mfg, want)
 	}
-	if prod, err := dev.Product(); err != nil {
-		t.Errorf("%s.Product(): error %v", dev, err)
+	if prod, productErr := dev.Product(); productErr != nil {
+		t.Errorf("%s.Product(): error %v", dev, productErr)
 	} else if want := "Fidgety Gadget"; prod != want {
 		t.Errorf("%s.Product(): %q, want %q", dev, prod, want)
 	}
-	if sn, err := dev.SerialNumber(); err != nil {
-		t.Errorf("%s.SerialNumber(): error %v", dev, err)
+	if sn, serialErr := dev.SerialNumber(); serialErr != nil {
+		t.Errorf("%s.SerialNumber(): error %v", dev, serialErr)
 	} else if want := "01234567"; sn != want {
 		t.Errorf("%s.SerialNumber(): %q, want %q", dev, sn, want)
 	}
 
-	if got, err := dev.ConfigDescription(1); err != nil {
-		t.Errorf("%s.ConfigDescription(1): %v", dev, err)
+	if got, configErr := dev.ConfigDescription(1); configErr != nil {
+		t.Errorf("%s.ConfigDescription(1): %v", dev, configErr)
 	} else if want := "Weird configuration"; got != want {
 		t.Errorf("%s.ConfigDescription(1): %q, want %q", dev, got, want)
 	}
-	if got, err := dev.ConfigDescription(2); err == nil {
+	if got, configErr1 := dev.ConfigDescription(2); configErr1 == nil {
 		t.Errorf("%s.ConfigDescription(2): %q, want error", dev, got)
 	}
 
@@ -83,8 +83,8 @@ func TestClaimAndRelease(t *testing.T) {
 		{1, 2, ""},
 		{3, 2, "Interface for https://github.com/google/gousb/issues/65"},
 	} {
-		if got, err := dev.InterfaceDescription(1, tc.intf, tc.alt); err != nil {
-			t.Errorf("%s.InterfaceDescription(1, %d, %d): %v", dev, tc.intf, tc.alt, err)
+		if got, interfaceErr := dev.InterfaceDescription(1, tc.intf, tc.alt); interfaceErr != nil {
+			t.Errorf("%s.InterfaceDescription(1, %d, %d): %v", dev, tc.intf, tc.alt, interfaceErr)
 		} else if got != tc.want {
 			t.Errorf("%s.InterfaceDescription(1, %d, %d): %q, want %q", dev, tc.intf, tc.alt, got, tc.want)
 		}
@@ -98,8 +98,8 @@ func TestClaimAndRelease(t *testing.T) {
 		t.Fatalf("%s.Config(1): %v", dev, err)
 	}
 	defer cfg.Close()
-	if got, err := dev.ActiveConfigNum(); err != nil {
-		t.Errorf("%s.ActiveConfigNum(): got error %v, want nil", dev, err)
+	if got, activeErr := dev.ActiveConfigNum(); err != nil {
+		t.Errorf("%s.ActiveConfigNum(): got error %v, want nil", dev, activeErr)
 	} else if got != cfgNum {
 		t.Errorf("%s.ActiveConfigNum(): got %d, want %d", dev, got, cfgNum)
 	}
@@ -117,7 +117,7 @@ func TestClaimAndRelease(t *testing.T) {
 		t.Errorf("%s.InEndpoint(%d): got %+v, want %+v", intf, ep1Addr, got, want)
 	}
 
-	if _, err := cfg.Interface(1, 0); err == nil {
+	if _, interfaceErr := cfg.Interface(1, 0); interfaceErr == nil {
 		t.Fatalf("%s.Interface(1, 0): got nil, want non nil, because Interface 1 is already claimed.", cfg)
 	}
 

@@ -182,8 +182,8 @@ func TestEndpointInOut(t *testing.T) {
 		t.Fatalf("OpenDeviceWithVIDPID(0x9999, 0x0001): got error %v, want nil", err)
 	}
 	defer func() {
-		if err := d.Close(); err != nil {
-			t.Errorf("%s.Close(): %v", d, err)
+		if closeErr := d.Close(); closeErr != nil {
+			t.Errorf("%s.Close(): %v", d, closeErr)
 		}
 	}()
 	cfg, err := d.Config(1)
@@ -191,8 +191,8 @@ func TestEndpointInOut(t *testing.T) {
 		t.Fatalf("%s.Config(1): %v", d, err)
 	}
 	defer func() {
-		if err := cfg.Close(); err != nil {
-			t.Errorf("%s.Close(): %v", cfg, err)
+		if closeErr := cfg.Close(); closeErr != nil {
+			t.Errorf("%s.Close(): %v", cfg, closeErr)
 		}
 	}()
 	intf, err := cfg.Interface(0, 0)
@@ -262,8 +262,8 @@ func TestSameEndpointNumberInOut(t *testing.T) {
 		t.Fatalf("OpenDeviceWithVIDPID(0x1111, 0x1111): got error %v, want nil", err)
 	}
 	defer func() {
-		if err := d.Close(); err != nil {
-			t.Errorf("%s.Close(): %v", d, err)
+		if closeErr := d.Close(); closeErr != nil {
+			t.Errorf("%s.Close(): %v", d, closeErr)
 		}
 	}()
 	cfg, err := d.Config(1)
@@ -271,8 +271,8 @@ func TestSameEndpointNumberInOut(t *testing.T) {
 		t.Fatalf("%s.Config(1): %v", d, err)
 	}
 	defer func() {
-		if err := cfg.Close(); err != nil {
-			t.Errorf("%s.Close(): %v", cfg, err)
+		if closeErr := cfg.Close(); closeErr != nil {
+			t.Errorf("%s.Close(): %v", cfg, closeErr)
 		}
 	}()
 	intf, err := cfg.Interface(0, 0)
@@ -304,8 +304,8 @@ func TestReadContext(t *testing.T) {
 		t.Fatalf("OpenDeviceWithVIDPID(0x9999, 0x0001): got error %v, want nil", err)
 	}
 	defer func() {
-		if err := d.Close(); err != nil {
-			t.Errorf("%s.Close(): %v", d, err)
+		if closeErr := d.Close(); closeErr != nil {
+			t.Errorf("%s.Close(): %v", d, closeErr)
 		}
 	}()
 	cfg, err := d.Config(1)
@@ -313,8 +313,8 @@ func TestReadContext(t *testing.T) {
 		t.Fatalf("%s.Config(1): %v", d, err)
 	}
 	defer func() {
-		if err := cfg.Close(); err != nil {
-			t.Errorf("%s.Close(): %v", cfg, err)
+		if closeErr := cfg.Close(); closeErr != nil {
+			t.Errorf("%s.Close(): %v", cfg, closeErr)
 		}
 	}()
 	intf, err := cfg.Interface(0, 0)
@@ -334,8 +334,8 @@ func TestReadContext(t *testing.T) {
 		ft.setData([]byte{1, 2, 3, 4, 5})
 		done()
 	}()
-	if got, err := iep.ReadContext(rCtx, buf); err != TransferCancelled {
-		t.Errorf("%s.Read: got error %v, want %v", iep, err, TransferCancelled)
+	if got, readErr := iep.ReadContext(rCtx, buf); readErr != TransferCancelled {
+		t.Errorf("%s.Read: got error %v, want %v", iep, readErr, TransferCancelled)
 	} else if want := 5; got != want {
 		t.Errorf("%s.Read: got %d bytes, want %d (partial read success)", iep, got, want)
 	}
